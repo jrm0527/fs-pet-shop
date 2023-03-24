@@ -8,6 +8,7 @@ const port = 8000;
 const handleRequest = function (req, res) {
   //   if (req.method === "GET" && routes[req.url] !== undefined) {
   if (req.method === "GET") {
+    
     if (!petRegExp.test(req.url)) {
       fs.readFile("pets.json", "utf8", function (error, data) {
         if (error) {
