@@ -1,0 +1,24 @@
+###
+
+GET http://localhost:8000/
+
+###
+GET http://localhost:8000/pets
+
+###
+GET http://localhost:8000/pets/-1
+
+###
+GET http://localhost:8000/pets/0
+
+###
+GET http://localhost:8000/pets/abc
+
+###
+GET http://localhost:8000/pets/8
+
+###
+GET http://localhost:8000/boom
+
+###
+GET http://localhost:8000/about
