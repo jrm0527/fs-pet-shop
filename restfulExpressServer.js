@@ -104,6 +104,29 @@ app.patch("/pets/:petIndex", function (req, res, next) {
   });
 });
 
+app.delete("/pets/:petIndex", function (req, res, next) {
+  let index = Number(req.params.petIndex);
+  fs.readFile("pets.json", "utf8", function (error, data) {
+    if (error) {
+      console.error(error);
+      return;
+    }
+    let pets = JSON.parse(data);
+    if (!pets[index]) {
+      next({ status: 404, message: "Bad Request" });
+      return;
+    }
+    let pet = pets.splice(index);
+    fs.writeFile("pets.json", JSON.stringify(pets), function (error) {
+      if (error) {
+        res.error(error);
+      } else {
+        res.json(pet);
+      }
+    });
+  });
+});
+
 app.listen(port, function () {
   console.log("server is running");
 });
