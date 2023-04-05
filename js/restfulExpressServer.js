@@ -1,6 +1,7 @@
 const requireAuth = false;
 import express from "express";
 const app = express();
+app.use(express.json());
 
 import basicAuth from "express-basic-auth";
 
@@ -28,8 +29,6 @@ if (requireAuth) {
   );
 }
 
-app.use(express.json());
-
 app.get("/pets", async (req, res) => {
   const client = new Client(process.env.DATABASE_URL);
   client.connect();
@@ -51,11 +50,11 @@ app.get("/pets/:petIndex", async (req, res, next) => {
   client.end();
 });
 
-app.get("/boom", function (req, res, next) {
+app.get("/boom", (req, res, next) => {
   next({ status: 500, message: "Internal Server Error" });
 });
 
-app.post("/pets", async function (req, res, next) {
+app.post("/pets", async (req, res, next) => {
   let petName = req.body.name;
   let petAge = Number(req.body.age);
   let petKind = req.body.kind;
@@ -76,46 +75,28 @@ app.post("/pets", async function (req, res, next) {
   client.end();
 });
 
-app.patch("/pets/:petIndex", async function (req, res, next) {
+app.patch("/pets/:petIndex", async (req, res, next) => {
   let index = Number(req.params.petIndex);
-  let petName = req.body.name;
-  let petAge = Number(req.body.age);
-  let petKind = req.body.kind;
-  let query = {};
-  if (!petName && !petAge && !petKind) {
+  let key = Object.keys(req.body)[0];
+  let value = Object.values(req.body)[0];
+
+  if (!key && !value) {
     next({ status: 400, message: "Bad Request" });
   }
 
-  if (petName) {
-    query = {
-      text: "UPDATE pet SET name = $1 WHERE id=$2 RETURNING *",
-      values: [petName, index],
-    };
-  }
+  const query = {
+    text: `UPDATE pet SET ${key} = $1 WHERE id=$2 RETURNING *`,
+    values: [value, index],
+  };
 
-  if (petAge) {
-    query = {
-      text: "UPDATE pet SET age = $1 WHERE id=$2 RETURNING *",
-      values: [petAge, index],
-    };
-  }
-
-  if (petKind) {
-    query = {
-      text: "UPDATE pet SET kind = $1 WHERE id=$2 RETURNING *",
-      values: [petKind, index],
-    };
-  }
   const client = new Client(process.env.DATABASE_URL);
-  await client.connect();
-
-  client.query(query, (error, result) => {
-    if (error) {
-      console.log("error");
-      next({ status: 400, message: "Bad Request" });
+  client.connect();
+  client.query(query).then((result) => {
+    if (result.rowCount === 0) {
+      next({ status: 404, message: "pet id not found" });
       return;
     }
-    res.json(result.rows);
+    res.send(result.rows);
     client.end();
   });
 });

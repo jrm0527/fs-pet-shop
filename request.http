@@ -50,7 +50,7 @@ PATCH http://localhost:8000/pets/1
 Content-Type: application/json
 
 {
-    "kind": "wolf",
+    "kind": "dog"
 }
 
 ### delete a pet
